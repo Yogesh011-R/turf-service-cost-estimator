@@ -1,0 +1,709 @@
+<title>Turf App Service Cost Estimator</title>
+<meta name="description" content="Plain-language estimator of the outside-company fees to run a turf booking app — app stores, payment service, WhatsApp, hosting — with a cheapest setup for a new business. Design and build cost not included.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground: #F5F7F2;
+    --surface: #FFFFFF;
+    --surface-2: #EEF2E9;
+    --ink: #1B2A20;
+    --muted: #5C6C61;
+    --faint: #8A988D;
+    --line: #DCE3D6;
+    --line-strong: #C1CDB8;
+    --accent: #1F7A45;
+    --accent-ink: #12522D;
+    --accent-soft: #E7F1E6;
+    --usage: #A9720A;
+    --usage-soft: #F6EDD8;
+    --shadow: 0 1px 2px rgba(27,42,32,.05), 0 10px 30px rgba(27,42,32,.07);
+    --measure: 53rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10150F; --surface: #171E15; --surface-2: #1F281C;
+      --ink: #E7EDE2; --muted: #9EAC9C; --faint: #71806F;
+      --line: #2B3628; --line-strong: #3C4A38;
+      --accent: #5CBA80; --accent-ink: #A9DABA; --accent-soft: #1C2C21;
+      --usage: #E0B45B; --usage-soft: #2A2413;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 34px rgba(0,0,0,.34);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #10150F; --surface: #171E15; --surface-2: #1F281C;
+    --ink: #E7EDE2; --muted: #9EAC9C; --faint: #71806F;
+    --line: #2B3628; --line-strong: #3C4A38;
+    --accent: #5CBA80; --accent-ink: #A9DABA; --accent-soft: #1C2C21;
+    --usage: #E0B45B; --usage-soft: #2A2413;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 34px rgba(0,0,0,.34);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 1rem; line-height: 1.62; -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: calc(var(--measure) + 4rem); margin: 0 auto;
+    padding: clamp(1.2rem, 3.5vw, 3rem) clamp(1rem, 3.5vw, 2.5rem) 5rem;
+  }
+
+  header.top { max-width: var(--measure); }
+  .kicker {
+    font-family: "IBM Plex Mono", monospace; text-transform: uppercase;
+    letter-spacing: .16em; font-size: .7rem; color: var(--accent-ink); margin: 0 0 .8rem;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, serif; font-weight: 500;
+    font-size: clamp(1.9rem, 5vw, 2.7rem); line-height: 1.1; letter-spacing: -.02em;
+    text-wrap: balance; margin: 0 0 .8rem;
+  }
+  header.top .intro { margin: 0 0 1rem; color: var(--muted); max-width: 42rem; }
+  .plain {
+    background: var(--accent-soft); border: 1px solid var(--accent);
+    border-radius: 12px; padding: .9rem 1.1rem; font-size: .9rem; max-width: 42rem;
+  }
+  .plain b { font-weight: 600; }
+  .disclaim {
+    margin-top: 1rem; border-left: 3px solid var(--usage); background: var(--usage-soft);
+    padding: .8rem 1rem; border-radius: 0 8px 8px 0; font-size: .88rem; max-width: 42rem;
+  }
+  .disclaim strong { color: var(--ink); }
+
+  .presets { display: flex; gap: .6rem; flex-wrap: wrap; margin: 1.4rem 0 0; }
+  .preset {
+    font-family: "IBM Plex Mono", monospace; font-size: .78rem;
+    padding: .55rem .95rem; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  }
+  .preset.lean { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); }
+  .preset:hover { border-color: var(--accent); }
+
+  .summary {
+    position: sticky; top: 0; z-index: 20; margin: 1.4rem 0 2rem; padding: 1rem;
+    background: var(--surface); border: 1px solid var(--line-strong); border-radius: 14px;
+    box-shadow: var(--shadow); display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem 1rem;
+  }
+  .tile { padding: .3rem .5rem; }
+  .tile + .tile { border-left: 1px solid var(--line); }
+  .tile .k {
+    font-family: "IBM Plex Mono", monospace; font-size: .64rem; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--muted); display: block; margin-bottom: .2rem;
+  }
+  .tile .v {
+    font-family: "Fraunces", Georgia, serif; font-weight: 600;
+    font-size: clamp(1.05rem, 3.4vw, 1.55rem); letter-spacing: -.01em;
+    font-variant-numeric: tabular-nums; line-height: 1.15;
+  }
+  .tile.hero .v { color: var(--accent-ink); }
+  .tile .sub {
+    font-family: "IBM Plex Mono", monospace; font-size: .64rem; color: var(--faint);
+    margin-top: .15rem; font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 34rem) {
+    .summary { grid-template-columns: 1fr; }
+    .tile + .tile { border-left: none; border-top: 1px solid var(--line); padding-top: .55rem; }
+  }
+
+  section { max-width: var(--measure); margin: 0 0 2.4rem; }
+  .s-head {
+    display: flex; align-items: baseline; gap: .7rem; margin: 0 0 .5rem;
+    padding-bottom: .45rem; border-bottom: 1px solid var(--line-strong);
+  }
+  .s-head .idx {
+    font-family: "IBM Plex Mono", monospace; font-size: .78rem; color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .s-head h2 {
+    font-family: "Fraunces", Georgia, serif; font-weight: 500; font-size: 1.4rem;
+    letter-spacing: -.01em; margin: 0;
+  }
+  .s-head .reset {
+    margin-left: auto;
+    font-family: "IBM Plex Mono", monospace; font-size: .74rem; background: none;
+    border: 1px solid var(--line-strong); color: var(--muted); padding: .35rem .7rem;
+    border-radius: 7px; cursor: pointer;
+  }
+  .s-head .reset:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .s-sub { font-size: .88rem; color: var(--muted); margin: 0 0 1rem; }
+
+  .assump {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1.1rem 1.2rem; box-shadow: var(--shadow);
+  }
+  .field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem 1.4rem; }
+  .field { display: flex; flex-direction: column; gap: .3rem; }
+  .field label {
+    font-size: .84rem; font-weight: 500; color: var(--muted);
+    display: flex; justify-content: space-between; gap: .5rem;
+  }
+  .field label .u { color: var(--faint); font-weight: 400; }
+  .field input[type="number"] {
+    font-family: "IBM Plex Mono", monospace; font-size: .95rem; padding: .5rem .6rem;
+    border: 1px solid var(--line-strong); border-radius: 8px; background: var(--ground);
+    color: var(--ink); width: 100%; font-variant-numeric: tabular-nums;
+  }
+  .field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+  .cat { margin-bottom: 1.3rem; }
+  .cat > h3 {
+    font-family: "IBM Plex Mono", monospace; font-size: .74rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--muted); margin: 0 0 .5rem;
+  }
+  .cat-body {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    overflow: hidden; box-shadow: var(--shadow);
+  }
+  .row {
+    display: flex; align-items: center; gap: .9rem; padding: .8rem 1rem;
+    border-bottom: 1px solid var(--line); cursor: pointer;
+  }
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: var(--surface-2); }
+  .row .txt { flex: 1; min-width: 0; }
+  .row .name { font-size: .95rem; font-weight: 500; }
+  .row .note { font-size: .8rem; color: var(--faint); margin-top: .1rem; }
+  .row .chip {
+    font-family: "IBM Plex Mono", monospace; font-size: .6rem; letter-spacing: .04em;
+    text-transform: uppercase; padding: .12rem .4rem; border-radius: 5px; white-space: nowrap;
+    border: 1px solid var(--accent); color: var(--accent-ink); background: var(--accent-soft);
+  }
+  .row .price {
+    font-family: "IBM Plex Mono", monospace; font-size: .8rem; text-align: right;
+    white-space: nowrap; color: var(--ink); font-variant-numeric: tabular-nums;
+    min-width: 6.5rem;
+  }
+  .row .price.zero { color: var(--accent-ink); }
+
+  .switch { position: relative; display: inline-flex; flex: none; }
+  .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .track {
+    width: 44px; height: 26px; border-radius: 99px; background: var(--line-strong);
+    position: relative; transition: background .15s; flex: none;
+  }
+  .track::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+    border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.35);
+  }
+  .switch input:checked + .track { background: var(--accent); }
+  .switch input:checked + .track::after { transform: translateX(18px); }
+  .switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .pick { position: relative; display: inline-flex; flex: none; }
+  .pick input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .dot {
+    width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line-strong);
+    flex: none; position: relative;
+  }
+  .pick input:checked + .dot { border-color: var(--accent); }
+  .pick input:checked + .dot::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent); }
+  .pick input:focus-visible + .dot { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .base { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 12px; padding: .9rem 1.1rem; font-size: .88rem; }
+  .base b { font-weight: 600; }
+  .base ul { margin: .4rem 0 0; padding-left: 1.1rem; color: var(--muted); }
+
+  .t-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; font-size: .87rem; min-width: 33rem; }
+  th, td { text-align: left; padding: .6rem .85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-size: .64rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+    font-weight: 600; background: var(--ground);
+  }
+  td.num, th.num {
+    text-align: right; font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  td.rate { font-family: "IBM Plex Mono", monospace; font-size: .8rem; color: var(--muted); white-space: nowrap; }
+  tr.group td {
+    background: var(--surface-2); font-family: "IBM Plex Mono", monospace; font-size: .66rem;
+    text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600;
+  }
+  tr.sum td { font-weight: 600; border-top: 1.5px solid var(--accent); background: var(--accent-soft); }
+  tr.sum td.num { color: var(--accent-ink); }
+  tr.grand td { font-weight: 700; background: var(--accent-soft); border-top: 2px solid var(--accent); }
+  tr.grand td.num { color: var(--accent-ink); font-size: .98rem; }
+  .basis { display: block; color: var(--faint); font-size: .72rem; font-family: "IBM Plex Mono", monospace; margin-top: .15rem; }
+  .empty { padding: 1.4rem; text-align: center; color: var(--faint); font-size: .9rem; }
+
+  .notes { font-size: .84rem; color: var(--muted); }
+  .notes h3 { font-size: .9rem; color: var(--ink); margin: 1.1rem 0 .4rem; }
+  .notes ul { padding-left: 1.1rem; margin: 0; }
+  .notes li { margin: .25rem 0; }
+  .notes a { color: var(--accent-ink); }
+  .notes code { font-family: "IBM Plex Mono", monospace; font-size: .82em; background: var(--surface-2); padding: .05rem .3rem; border-radius: 4px; }
+
+  footer {
+    max-width: var(--measure); margin-top: 3rem; padding-top: 1rem;
+    border-top: 1px solid var(--line-strong); font-family: "IBM Plex Mono", monospace;
+    font-size: .7rem; color: var(--faint); display: flex; justify-content: space-between;
+    flex-wrap: wrap; gap: .5rem;
+  }
+
+  @media print {
+    :root { --ground:#fff; --surface:#fff; --surface-2:#f3f3f3; --ink:#000; --muted:#333; --shadow:none; }
+    .summary { position: static; }
+    .switch, .pick, .presets, .s-head .reset { display: none; }
+    section, .t-wrap, .cat-body, tr { break-inside: avoid; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <p class="kicker">Turf booking app &middot; monthly running costs</p>
+    <h1>What the app will cost to run</h1>
+    <p class="intro">Choose how each part of the app should work. Every option shows its price in its own
+      column, and the totals at the top update as you choose. Options are listed cheapest first, so a new
+      turf can start at almost no monthly cost and upgrade later.</p>
+    <div class="plain">
+      <b>In plain terms:</b> this sheet only covers the fees paid to outside companies to keep the app
+      running &mdash; the app stores, the payment service, WhatsApp, text messages, and the hosting that
+      keeps the app online. Most of these are small per-use charges or monthly rentals.
+    </div>
+    <div class="disclaim">
+      <strong>Not included here:</strong> the cost of designing and building the app itself. That is a
+      separate one-time quote. Prices are indicative for India as of September&nbsp;2026 and should be
+      confirmed with each provider before signing.
+    </div>
+    <div class="presets">
+      <button class="preset lean" id="p-lean">&#9889; Cheapest setup</button>
+      <button class="preset" id="p-standard">Fuller setup</button>
+    </div>
+  </header>
+
+  <div class="summary" id="summary">
+    <div class="tile"><span class="k">Pay once (setup)</span><span class="v" id="v-setup">&#8377;0</span><span class="sub" id="s-setup">&nbsp;</span></div>
+    <div class="tile"><span class="k">Every month</span><span class="v" id="v-month">&#8377;0</span><span class="sub" id="s-month">&nbsp;</span></div>
+    <div class="tile hero"><span class="k">Total for year 1</span><span class="v" id="v-year">&#8377;0</span><span class="sub" id="s-year">&nbsp;</span></div>
+  </div>
+
+  <section>
+    <div class="s-head"><span class="idx">01</span><h2>Your expected numbers</h2></div>
+    <p class="s-sub">Rough guesses are fine. These decide the per-use charges (payments, messages).</p>
+    <div class="assump">
+      <div class="field-grid">
+        <div class="field"><label for="f-bookings">Bookings a month <span class="u">how many</span></label><input type="number" id="f-bookings" min="0" step="50" value="800"></div>
+        <div class="field"><label for="f-online">Paid through the app <span class="u">% of bookings</span></label><input type="number" id="f-online" min="0" max="100" step="5" value="60"></div>
+        <div class="field"><label for="f-value">Typical booking amount <span class="u">&#8377;</span></label><input type="number" id="f-value" min="0" step="100" value="1200"></div>
+        <div class="field"><label for="f-logins">New sign-ins a month <span class="u">how many</span></label><input type="number" id="f-logins" min="0" step="50" value="400"></div>
+        <div class="field"><label for="f-msgpb">Messages sent per booking <span class="u">e.g. confirm + reminder</span></label><input type="number" id="f-msgpb" min="0" step="1" value="2"></div>
+        <div class="field"><label for="f-maps">Times the map is opened a month <span class="u">how many</span></label><input type="number" id="f-maps" min="0" step="1000" value="6000"></div>
+        <div class="field"><label for="f-kyc">ID checks a month <span class="u">staff / partners</span></label><input type="number" id="f-kyc" min="0" step="10" value="0"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="s-head"><span class="idx">02</span><h2>Where people get the app</h2></div>
+    <div id="platforms"></div>
+  </section>
+
+  <section>
+    <div class="s-head"><span class="idx">03</span><h2>How each part works</h2></div>
+    <p class="s-sub">One choice per group. The green &ldquo;cheapest&rdquo; tag marks the lowest-cost option.</p>
+    <div id="choices"></div>
+  </section>
+
+  <section>
+    <div class="s-head"><span class="idx">04</span><h2>How customers get booking updates</h2></div>
+    <div id="channels"></div>
+  </section>
+
+  <section>
+    <div class="s-head"><span class="idx">05</span><h2>Optional extras</h2></div>
+    <div id="addons"></div>
+  </section>
+
+  <section>
+    <div class="s-head"><span class="idx">06</span><h2>Included at no charge</h2></div>
+    <div class="base">
+      <b>Always on, nothing to pay:</b>
+      <ul>
+        <li>App notifications (the pop-up alerts on the phone)</li>
+        <li>Basic usage reports and automatic error reporting</li>
+        <li>Website security certificate</li>
+        <li>A check that keeps watch on whether the app is online</li>
+      </ul>
+      <p style="margin:.5rem 0 0">The web address (domain) is the one small yearly cost that always applies.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="s-head"><span class="idx">07</span><h2>Cost summary</h2><button class="reset" id="reset">Reset</button></div>
+    <div class="t-wrap">
+      <table>
+        <thead><tr>
+          <th>Service</th><th>What it&rsquo;s for</th><th class="num">Price</th><th class="num">Your cost</th>
+        </tr></thead>
+        <tbody id="breakdown"></tbody>
+      </table>
+    </div>
+    <p class="s-sub" style="margin-top:.8rem">&ldquo;Price&rdquo; is the provider&rsquo;s published rate. &ldquo;Your cost&rdquo; applies your expected
+      numbers to that rate, for the period shown in each group heading.</p>
+  </section>
+
+  <section class="notes">
+    <div class="s-head"><span class="idx">08</span><h2>Notes &amp; sources</h2></div>
+    <p>Every rate sits in one <code>RATES</code> block at the top of this page&rsquo;s code, so it can be
+      updated as prices change.</p>
+    <h3>Why the cheapest choices cost what they do</h3>
+    <ul>
+      <li><b>Sign in with Google/Apple</b> &mdash; free, and no phone number is collected. A <b>login code on WhatsApp</b> is about &#8377;0.13 each. A <b>login code by SMS</b> is the expensive route: a one-time government registration of &#8377;5,900 (required to send any SMS in India) plus about &#8377;0.20 per code.</li>
+      <li><b>Customer pays to your UPI / QR and staff mark it received</b> &mdash; no payment-service fee at all. A <b>payment service with a free introductory period</b> (such as Zaakpay) is free up to &#8377;5&nbsp;lakh of takings or 90 days, then about 2% + tax. <b>Cashfree</b> is about 2.06% and <b>Razorpay / PhonePe</b> about 2.36% of the amount paid through the app.</li>
+      <li><b>Starter hosting</b> uses free plans &mdash; fine to trial the app, but it can be slow to wake up and has usage limits. <b>Basic hosting</b> at about &#8377;800 a month is the sensible minimum for a real launch.</li>
+      <li><b>Maps</b> &mdash; one venue stays within the free monthly allowance, or a free map provider can be used, so this is usually &#8377;0.</li>
+      <li><b>Skip SMS</b> where you can &mdash; phone notifications and email cover the essentials for free.</li>
+      <li><b>Delay the Apple fee</b> &mdash; launching on Android first saves about &#8377;8,500 a year until an iPhone app is worth it.</li>
+    </ul>
+    <h3>Sources</h3>
+    <ul>
+      <li><a href="https://razorpay.com/blog/low-cost-payment-gateway-in-india-the-complete-decision-guide/">Low-cost payment gateway guide 2026</a>; <a href="https://razorpay.com/learn/upi-transaction-charges/">UPI transaction charges</a>; <a href="https://salarybox.in/blog/7-cheapest-payment-gateways-in-india-for-saas-startups-in-2026/">cheapest gateways for startups 2026</a></li>
+      <li><a href="https://uniquedigitaloutreach.in/otp-pricing-in-india-sms-vs-whatsapp-cost-comparison-2026/">WhatsApp vs SMS login-code pricing India 2026</a>; <a href="https://quickauth.in/blog/dlt-registration-guide-india">SMS government (DLT) registration cost</a></li>
+      <li><a href="https://blog.logto.io/firebase-authentication-pricing">Firebase sign-in pricing 2026</a></li>
+      <li><a href="https://developers.google.com/maps/billing-and-pricing/pricing">Google Maps pricing &amp; free allowance</a></li>
+      <li><a href="https://techsy.io/en/blog/railway-vs-render-vs-fly-io">Hosting price comparison 2026</a></li>
+    </ul>
+    <p style="margin-top:1rem">Your choices are saved in this browser only. Use <b>Print &rarr; Save as PDF</b> to keep or share a copy.</p>
+  </section>
+
+  <footer>
+    <span>Turf App Service Cost Estimator</span>
+    <span>Indicative &middot; India &middot; Sep 2026 &middot; confirm with providers before signing</span>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   RATES — edit after your own checks. India, mid-2026 (INR).
+   ============================================================ */
+const RATES = {
+  domainAnnual:    1200,
+  appleAnnual:     8500,   // Apple Developer Program (~$99/yr)
+  playSetup:       2100,   // Google Play Developer (~$25 one-time)
+
+  infraBudget:      800,   // small hosting server + free CDN (per month)
+  infraStd:        4500,   // managed hosting + managed database + backups (per month)
+
+  dltSetup:        5900,   // one-time government (TRAI DLT) registration for SMS
+  dltAnnual:        590,   // per sender name / year
+
+  smsPerMsg:       0.18,   // text message
+  smsOtpPerLogin:  0.20,   // login code by SMS
+  waOtpPerLogin:   0.13,   // login code on WhatsApp
+  waUtilPerMsg:    0.13,   // booking update on WhatsApp
+  emailPerMsg:     0.05,   // email above the free allowance (near zero at this size)
+
+  gwRazorpay:      0.0236, // 2% + 18% tax
+  gwCashfree:      0.0206, // ~1.75% + 18% tax
+  gwWaiver:        0,      // free introductory period, then ~2%
+
+  mapsFreeLoads:   10000,
+  mapsPer1000:     600,    // ~$7 per 1,000 map opens above the free allowance
+
+  realtimeMonthly: 2500,   // server for live chat / live match-making
+  sentryMonthly:   2200,   // detailed error-tracking tool (optional)
+  supportMonthly:  2000,   // paid live-chat helpdesk (optional)
+  kycPerCheck:     20,
+};
+
+/* ---- Your expected numbers ---- */
+const VOL = { bookings:800, online:60, value:1200, logins:400, msgPerBooking:2, mapLoads:6000, kyc:0 };
+
+const rupee = n => '₹' + Math.round(n).toLocaleString('en-IN');
+
+/* ---- Service list. desc = plain meaning, rate = provider's price. ---- */
+const SERVICE = {
+  domain: { name:'Web address (domain)', desc:'The app&rsquo;s address on the internet', annual:()=>RATES.domainAnnual, rate:()=>'₹1,200 / year' },
+  apple:  { name:'Apple app-store account', desc:'Apple&rsquo;s yearly fee to keep the app on iPhones', annual:()=>RATES.appleAnnual, rate:()=>'₹8,500 / year' },
+  play:   { name:'Google Play account', desc:'Google&rsquo;s one-time fee to publish on Android', setup:()=>RATES.playSetup, rate:()=>'₹2,100 once' },
+
+  infra_budget: { name:'Basic hosting', desc:'The server that runs the app and stores the data', monthly:()=>RATES.infraBudget, rate:()=>'₹800 / month' },
+  infra_std:    { name:'Standard hosting', desc:'Larger hosting with managed database and backups', monthly:()=>RATES.infraStd, rate:()=>'₹4,500 / month' },
+
+  dlt: { name:'SMS government registration', desc:'One-time TRAI registration required to send SMS in India', setup:()=>RATES.dltSetup, annual:()=>RATES.dltAnnual, rate:()=>'₹5,900 once + ₹590 / year' },
+
+  realtime:{ name:'Live-chat / match-making server', desc:'Keeps live conversations and open games in sync', monthly:()=>RATES.realtimeMonthly, rate:()=>'₹2,500 / month' },
+  sentry:  { name:'Detailed error tracking', desc:'Reports app problems with enough detail to fix fast', monthly:()=>RATES.sentryMonthly, rate:()=>'₹2,200 / month' },
+  support: { name:'Paid live-chat helpdesk', desc:'Chat support widget beyond the free version', monthly:()=>RATES.supportMonthly, rate:()=>'₹2,000 / month' },
+
+  waotp_usage:{ name:'WhatsApp login codes', desc:'Verification code sent on WhatsApp at sign-in',
+    usage:()=>VOL.logins*RATES.waOtpPerLogin, rate:()=>'₹0.13 per code',
+    basis:()=>`${VOL.logins.toLocaleString('en-IN')} sign-ins × ₹0.13` },
+  smsotp_usage:{ name:'SMS login codes', desc:'Verification code sent by text message at sign-in',
+    usage:()=>VOL.logins*RATES.smsOtpPerLogin, rate:()=>'₹0.20 per code',
+    basis:()=>`${VOL.logins.toLocaleString('en-IN')} sign-ins × ₹0.20` },
+  email_usage:{ name:'Booking emails', desc:'Confirmations and reminders sent by email',
+    usage:()=>VOL.bookings*RATES.emailPerMsg, rate:()=>'mostly free',
+    basis:()=>`~${VOL.bookings.toLocaleString('en-IN')} emails, within the free allowance` },
+  wa_util_usage:{ name:'WhatsApp booking updates', desc:'Confirmations and reminders sent on WhatsApp',
+    usage:()=>VOL.bookings*VOL.msgPerBooking*RATES.waUtilPerMsg, rate:()=>'₹0.13 per message',
+    basis:()=>`${VOL.bookings.toLocaleString('en-IN')} × ${VOL.msgPerBooking} messages × ₹0.13` },
+  sms_usage:{ name:'SMS booking updates', desc:'Confirmations and reminders sent by text message',
+    usage:()=>VOL.bookings*VOL.msgPerBooking*RATES.smsPerMsg, rate:()=>'₹0.18 per message',
+    basis:()=>`${VOL.bookings.toLocaleString('en-IN')} × ${VOL.msgPerBooking} messages × ₹0.18` },
+
+  gw_rzp:{ name:'Payment service (Razorpay / PhonePe)', desc:'Handles card, UPI and net-banking payments in the app',
+    usage:()=>VOL.bookings*(VOL.online/100)*VOL.value*RATES.gwRazorpay, rate:()=>'2% + tax (≈ 2.36%)',
+    basis:()=>`${Math.round(VOL.bookings*VOL.online/100).toLocaleString('en-IN')} online payments × ${rupee(VOL.value)} × 2.36%` },
+  gw_cf:{ name:'Payment service (Cashfree)', desc:'Handles card, UPI and net-banking payments in the app',
+    usage:()=>VOL.bookings*(VOL.online/100)*VOL.value*RATES.gwCashfree, rate:()=>'1.75% + tax (≈ 2.06%)',
+    basis:()=>`${Math.round(VOL.bookings*VOL.online/100).toLocaleString('en-IN')} online payments × ${rupee(VOL.value)} × 2.06%` },
+  gw_waiver:{ name:'Payment service (free introductory period)', desc:'Same as above, with an opening free period',
+    usage:()=>0, rate:()=>'0% now, ~2% later',
+    basis:()=>'Free up to ₹5 lakh takings or 90 days, then about 2% + tax' },
+
+  maps_usage:{ name:'Map views (above free allowance)', desc:'Charged only after the free monthly map opens run out',
+    usage:()=>Math.max(0,VOL.mapLoads-RATES.mapsFreeLoads)/1000*RATES.mapsPer1000, rate:()=>'₹600 per 1,000',
+    basis:()=> VOL.mapLoads<=RATES.mapsFreeLoads ? `${VOL.mapLoads.toLocaleString('en-IN')} opens — within the free 10,000`
+      : `${(VOL.mapLoads-RATES.mapsFreeLoads).toLocaleString('en-IN')} over the free allowance × ₹600 / 1,000` },
+  kyc_usage:{ name:'ID verification checks', desc:'Identity checks for staff or partner accounts',
+    usage:()=>VOL.kyc*RATES.kycPerCheck, rate:()=>'₹20 per check',
+    basis:()=>`${VOL.kyc.toLocaleString('en-IN')} checks × ₹20` },
+};
+
+const BASE_SERVICES = ['domain'];
+
+/* ---- Where people get the app (toggles) ---- */
+const PLATFORMS = [
+  { id:'android', name:'Android phones (Google Play)', services:['play'], def:true, price:'₹2,100 once', note:'One-time account fee.' },
+  { id:'ios',     name:'iPhones (Apple App Store)', services:['apple'], def:false, price:'₹8,500 / year', note:'Can be added later to save this fee at the start.' },
+  { id:'web',     name:'Web browser (works on any device)', services:[], def:true, price:'Free', note:'No extra fee.' },
+];
+
+/* ---- How each part works (radio groups) ---- */
+const CHOICES = [
+  { id:'auth', label:'How customers sign in', def:'social', options:[
+    { v:'social', name:'Sign in with Google or Apple', services:[], best:true, price:'Free', note:'Fastest to set up. No phone number needed.' },
+    { v:'email',  name:'Sign in with an email code / link', services:['email_usage'], price:'Free', note:'No cost at this size.' },
+    { v:'waotp',  name:'Login code sent on WhatsApp', services:['waotp_usage'], price:'~₹0.13 / sign-in', note:'Small per-use charge, no monthly fee.' },
+    { v:'smsotp', name:'Login code sent by text message (SMS)', services:['dlt','smsotp_usage'], price:'₹5,900 once + ₹0.20 / sign-in', note:'Most expensive. Needs the SMS government registration.' },
+  ]},
+  { id:'pay', label:'How customers pay', def:'upiman', options:[
+    { v:'none',    name:'Pay at the turf only (no payment in the app)', services:[], best:true, price:'Free', note:'Booking is a request; money is collected in person.' },
+    { v:'upiman',  name:'Customer pays to your UPI / QR, staff mark it received', services:[], best:true, price:'Free', note:'No payment-service fee. A little manual checking.' },
+    { v:'waiver',  name:'Payment service with a free introductory period', services:['gw_waiver'], price:'0% now, ~2% later', note:'Free up to ₹5 lakh takings or 90 days.' },
+    { v:'cashfree',name:'Payment service (Cashfree)', services:['gw_cf'], price:'≈ 2.06% of app payments', note:'Lower published rate.' },
+    { v:'razorpay',name:'Payment service (Razorpay / PhonePe)', services:['gw_rzp'], price:'≈ 2.36% of app payments', note:'Most common; best reliability.' },
+  ]},
+  { id:'host', label:'Where the app runs (hosting)', def:'budget', options:[
+    { v:'free',    name:'Starter hosting (free plans)', services:[], best:true, price:'Free', note:'Good for a trial. Can be slow to wake up; usage limits.' },
+    { v:'budget',  name:'Basic hosting', services:['infra_budget'], price:'₹800 / month', note:'Sensible minimum for a real launch.' },
+    { v:'standard',name:'Standard hosting', services:['infra_std'], price:'₹4,500 / month', note:'Room to grow as bookings increase.' },
+  ]},
+  { id:'maps', label:'Map on the venue page', def:'freemap', options:[
+    { v:'freemap', name:'Free map', services:[], best:true, price:'Free', note:'Enough for a single venue.' },
+    { v:'gmaps',   name:'Google Maps (paid, above the free allowance)', services:['maps_usage'], price:'₹600 per 1,000 opens', note:'Only if map opens exceed 10,000 a month.' },
+  ]},
+];
+
+/* ---- How customers get booking updates (multi) ---- */
+const CHANNELS = [
+  { id:'ch_push',  name:'Phone notifications (pop-up alerts)', services:[], def:true, price:'Free', note:'The standard way. No cost.' },
+  { id:'ch_email', name:'Email', services:['email_usage'], def:true, price:'Free', note:'Free at this size.' },
+  { id:'ch_wa',    name:'WhatsApp', services:['wa_util_usage'], def:false, price:'~₹0.13 / message', note:'Higher open rates; small per-message charge.' },
+  { id:'ch_sms',   name:'Text message (SMS)', services:['dlt','sms_usage'], def:false, price:'₹5,900 once + ₹0.18 / message', note:'Needs the SMS government registration.' },
+];
+
+/* ---- Optional extras (toggles) ---- */
+const ADDONS = [
+  { id:'reviews',    name:'Ratings &amp; reviews', services:[], price:'Free', note:'No extra fee.' },
+  { id:'coupons',    name:'Discount codes / offers', services:[], price:'Free', note:'No extra fee.' },
+  { id:'referral',   name:'Refer-a-friend', services:[], price:'Free', note:'Free unless invites go by WhatsApp/SMS above.' },
+  { id:'loyalty',    name:'Loyalty points / prepaid balance', services:[], price:'Free', note:'No extra fee.' },
+  { id:'recurring',  name:'Repeat / weekly bookings', services:[], price:'Free', note:'Uses the payment choice above.' },
+  { id:'matchmaking',name:'Find-a-game (join an open slot)', services:['realtime'], price:'₹2,500 / month', note:'Needs the live server.' },
+  { id:'playerchat', name:'Chat between players', services:['realtime'], price:'₹2,500 / month', note:'Shares the same live server.' },
+  { id:'tournaments',name:'Teams &amp; tournaments', services:[], price:'Free', note:'No extra fee.' },
+  { id:'support',    name:'Paid live-chat helpdesk', services:['support'], price:'₹2,000 / month', note:'A free version is used otherwise.' },
+  { id:'sentry',     name:'Detailed error tracking', services:['sentry'], price:'₹2,200 / month', note:'A free basic version is used otherwise.' },
+  { id:'kyc',        name:'ID verification for staff / partners', services:['kyc_usage'], price:'₹20 per check', note:'Charged per check.' },
+];
+
+/* ---- State ---- */
+const STORE_KEY = 'turf-runcost-v3';
+let toggles = {};
+let choice = {};
+PLATFORMS.forEach(p => toggles[p.id] = !!p.def);
+CHANNELS.forEach(c => toggles[c.id] = !!c.def);
+ADDONS.forEach(a => toggles[a.id] = false);
+CHOICES.forEach(c => choice[c.id] = c.def);
+
+const PRESETS = {
+  lean: {
+    toggles: { android:true, ios:false, web:true, ch_push:true, ch_email:true, ch_wa:false, ch_sms:false },
+    choice:  { auth:'social', pay:'upiman', host:'free', maps:'freemap' },
+  },
+  standard: {
+    toggles: { android:true, ios:true, web:true, ch_push:true, ch_email:true, ch_wa:true, ch_sms:false },
+    choice:  { auth:'waotp', pay:'razorpay', host:'standard', maps:'gmaps' },
+  },
+};
+
+function load(){
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+    if(d.toggles) Object.assign(toggles, d.toggles);
+    if(d.choice)  Object.assign(choice, d.choice);
+    if(d.vol)     Object.assign(VOL, d.vol);
+  } catch(e){}
+}
+function save(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({toggles, choice, vol:VOL})); } catch(e){}
+}
+function applyPreset(name){
+  ADDONS.forEach(a => toggles[a.id] = false);
+  Object.assign(toggles, PRESETS[name].toggles);
+  Object.assign(choice, PRESETS[name].choice);
+  renderAll(); recompute();
+}
+
+/* ---- Rendering ---- */
+function priceClass(p){ return /^free$/i.test(p.trim()) ? 'price zero' : 'price'; }
+
+function toggleRow(it){
+  return '<label class="row">'
+    + '<span class="txt"><span class="name">'+it.name+'</span>'
+    + (it.note ? '<span class="note">'+it.note+'</span>' : '') + '</span>'
+    + '<span class="'+priceClass(it.price)+'">'+it.price+'</span>'
+    + '<span class="switch"><input type="checkbox" data-tg="'+it.id+'"'+(toggles[it.id]?' checked':'')
+    + ' aria-label="'+it.name.replace(/<[^>]+>/g,'')+'"><span class="track"></span></span></label>';
+}
+function card(title, inner){
+  return '<div class="cat"><h3>'+title+'</h3><div class="cat-body">'+inner+'</div></div>';
+}
+
+function renderAll(){
+  document.getElementById('platforms').innerHTML =
+    card('Choose one or more', PLATFORMS.map(toggleRow).join(''));
+
+  document.getElementById('choices').innerHTML = CHOICES.map(g => {
+    const rows = g.options.map(o =>
+      '<label class="row">'
+      + '<span class="pick"><input type="radio" name="ch-'+g.id+'" data-ch="'+g.id+'" value="'+o.v+'"'
+      + (choice[g.id]===o.v?' checked':'') + '><span class="dot"></span></span>'
+      + '<span class="txt"><span class="name">'+o.name+'</span>'
+      + (o.note ? '<span class="note">'+o.note+'</span>' : '') + '</span>'
+      + (o.best ? '<span class="chip">cheapest</span>' : '')
+      + '<span class="'+priceClass(o.price)+'">'+o.price+'</span></label>'
+    ).join('');
+    return card(g.label, rows);
+  }).join('');
+
+  document.getElementById('channels').innerHTML =
+    card('Choose one or more', CHANNELS.map(toggleRow).join(''));
+
+  document.getElementById('addons').innerHTML =
+    card('Turn on what you need', ADDONS.map(toggleRow).join(''));
+
+  document.querySelectorAll('input[data-tg]').forEach(cb =>
+    cb.addEventListener('change', () => { toggles[cb.dataset.tg] = cb.checked; recompute(); }));
+  document.querySelectorAll('input[data-ch]').forEach(rb =>
+    rb.addEventListener('change', () => { if(rb.checked){ choice[rb.dataset.ch] = rb.value; recompute(); } }));
+}
+
+/* ---- Compute ---- */
+function activeServiceIds(){
+  const set = new Set(BASE_SERVICES);
+  const add = arr => arr.forEach(s => set.add(s));
+  PLATFORMS.forEach(p => { if(toggles[p.id]) add(p.services); });
+  CHANNELS.forEach(c => { if(toggles[c.id]) add(c.services); });
+  ADDONS.forEach(a => { if(toggles[a.id]) add(a.services); });
+  CHOICES.forEach(g => { const o = g.options.find(x => x.v === choice[g.id]); if(o) add(o.services); });
+  return set;
+}
+
+function recompute(){
+  const ids = activeServiceIds();
+  const rows = { setup:[], annual:[], monthly:[], usage:[] };
+  let setupT=0, annualT=0, monthlyT=0, usageT=0;
+
+  ids.forEach(id => {
+    const s = SERVICE[id]; if(!s) return;
+    const rate = s.rate ? s.rate() : '';
+    const basis = s.basis ? s.basis() : '';
+    if(s.setup){ const v=s.setup(); setupT+=v; rows.setup.push({s, rate, basis:basis||'one-time', v}); }
+    if(s.annual){ const v=s.annual(); annualT+=v; rows.annual.push({s, rate, basis:basis||'per year', v}); }
+    if(s.monthly){ const v=s.monthly(); monthlyT+=v; rows.monthly.push({s, rate, basis:basis||'per month', v}); }
+    if(s.usage){ const v=s.usage(); usageT+=v; rows.usage.push({s, rate, basis:basis||'per use', v}); }
+  });
+
+  const monthCombined = monthlyT + usageT;
+  const year1 = setupT + annualT + 12*monthCombined;
+
+  document.getElementById('v-setup').textContent = rupee(setupT);
+  document.getElementById('s-setup').textContent = setupT>0 ? 'one-time' : 'nothing up front';
+  document.getElementById('v-month').textContent = rupee(monthCombined);
+  document.getElementById('s-month').innerHTML = rupee(monthlyT)+' fixed + '+rupee(usageT)+' per use';
+  document.getElementById('v-year').textContent = rupee(year1);
+  document.getElementById('s-year').innerHTML = rupee(setupT)+' + '+rupee(annualT)+' yearly + 12 × '+rupee(monthCombined);
+
+  const tb = document.getElementById('breakdown');
+  tb.innerHTML = '';
+  const sec = (title, list, total, label) => {
+    if(!list.length) return;
+    const g = document.createElement('tr'); g.className='group';
+    g.innerHTML = '<td colspan="4">'+title+'</td>'; tb.appendChild(g);
+    list.sort((a,b)=>b.v-a.v).forEach(({s, rate, basis, v}) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><b style="font-weight:600">'+s.name+'</b></td>'
+        + '<td>'+(s.desc||'')+'<span class="basis">'+basis+'</span></td>'
+        + '<td class="rate">'+rate+'</td>'
+        + '<td class="num">'+(v>0?rupee(v):'—')+'</td>';
+      tb.appendChild(tr);
+    });
+    const sr = document.createElement('tr'); sr.className='sum';
+    sr.innerHTML = '<td colspan="3">'+label+'</td><td class="num">'+rupee(total)+'</td>';
+    tb.appendChild(sr);
+  };
+  sec('Pay once', rows.setup, setupT, 'One-time total');
+  sec('Every year', rows.annual, annualT, 'Yearly total');
+  sec('Every month — fixed', rows.monthly, monthlyT, 'Fixed monthly total');
+  sec('Every month — per use (at your numbers)', rows.usage, usageT, 'Per-use monthly total');
+
+  if(!rows.setup.length && !rows.annual.length && !rows.monthly.length && !rows.usage.length){
+    tb.innerHTML = '<tr><td colspan="4" class="empty">Nothing chosen carries a fee — running cost is effectively zero.</td></tr>';
+  } else {
+    const grand = document.createElement('tr'); grand.className='grand';
+    grand.innerHTML = '<td colspan="3">Total for the first year</td><td class="num">'+rupee(year1)+'</td>';
+    tb.appendChild(grand);
+  }
+  save();
+}
+
+/* ---- Your-numbers inputs ---- */
+const MAP = {'f-bookings':'bookings','f-online':'online','f-value':'value','f-logins':'logins',
+  'f-msgpb':'msgPerBooking','f-maps':'mapLoads','f-kyc':'kyc'};
+function bindInputs(){
+  Object.keys(MAP).forEach(id => {
+    const el = document.getElementById(id);
+    el.value = VOL[MAP[id]];
+    el.addEventListener('input', () => {
+      let v = parseFloat(el.value); if(isNaN(v)||v<0) v = 0;
+      if(id==='f-online' && v>100) v = 100;
+      VOL[MAP[id]] = v; recompute();
+    });
+  });
+}
+
+document.getElementById('p-lean').addEventListener('click', () => applyPreset('lean'));
+document.getElementById('p-standard').addEventListener('click', () => applyPreset('standard'));
+document.getElementById('reset').addEventListener('click', () => {
+  try { localStorage.removeItem(STORE_KEY); } catch(e){}
+  location.reload();
+});
+
+/* ---- Init ---- */
+load();
+bindInputs();
+renderAll();
+recompute();
+</script>
